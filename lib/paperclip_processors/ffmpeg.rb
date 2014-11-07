@@ -68,7 +68,8 @@ module Paperclip
         # if auto_portrait_landspace
         if @auto_portrait_landspace && ( \
             ((current_width < current_height) && (target_width > target_height)) || \
-            ((current_width > current_height) && (target_width < target_height)) )
+            ((current_width > current_height) && (target_width < target_height)) || \
+            !@meta[:rotate].nil? )
           target_width, target_height = target_height, target_width     
         end
 
