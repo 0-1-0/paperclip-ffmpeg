@@ -69,7 +69,7 @@ module Paperclip
         if @auto_portrait_landspace && ( \
             ((current_width < current_height) && (target_width > target_height)) || \
             ((current_width > current_height) && (target_width < target_height)) || \
-            !@meta[:rotate].nil? )
+            @meta[:rotate] == 90 )
           target_width, target_height = target_height, target_width     
         end
 
@@ -112,10 +112,18 @@ module Paperclip
               
               if width > height
                 xwidth = [(height.to_f * @meta[:aspect].to_f).to_i, width].max
-                @convert_options[:output][:vf][/\A/] = "scale=#{xwidth}:-1,crop=#{width.to_i}:#{height.to_i}"
+                if  @meta[:rotate] == 90 
+                  @convert_options[:output][:vf][/\A/] = "scale=#{xwidth}:-1,crop=#{height.to_i}:#{width.to_i}"
+                else
+                  @convert_options[:output][:vf][/\A/] = "scale=#-1:{xwidth},crop=#{width.to_i}:#{height.to_i}"
+                end
               else
                 xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
-                @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
+                if  @meta[:rotate] == 90 
+                  @convert_options[:output][:vf][/\A/] = "scale=#{xheight}:-1,crop=#{height.to_i}:#{width.to_i}"
+                else
+                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
+                end
               end
               # # Keep aspect ratio
               # width = target_width.to_i
