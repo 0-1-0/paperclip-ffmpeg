@@ -119,7 +119,7 @@ module Paperclip
                 end
               else
                 xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
-                @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
+                @convert_options[:output][:vf][/\A/] = "scale=#{xheight}:-1,crop=#{height.to_i}:#{width.to_i}"
                 # if  @meta[:rotate] == 90 
                 #   @convert_options[:output][:vf][/\A/] = "scale=#{xheight}:-1,crop=#{height.to_i}:#{width.to_i}"
                 # else
