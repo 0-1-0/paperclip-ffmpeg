@@ -115,7 +115,7 @@ module Paperclip
               if width > height
                 xwidth = [(height.to_f * @meta[:aspect].to_f).to_i, width].max
                 if  @meta[:aspect] && @meta[:aspect] < 1.0
-                  @convert_options[:output][:vf][/\A/] = "scale=#{xwidth}:-1,crop=#{height.to_i}:#{width.to_i}"
+                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xwidth},crop=#{height.to_i}:#{width.to_i}"
                 else
                   @convert_options[:output][:vf][/\A/] = "scale=-1:#{xwidth},crop=#{width.to_i}:#{height.to_i}"
                 end
@@ -123,7 +123,7 @@ module Paperclip
                 xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
                 
                 if  @meta[:aspect] && @meta[:aspect] < 1.0
-                  @convert_options[:output][:vf][/\A/] = "scale=#{xheight}:-1,crop=#{height.to_i}:#{width.to_i}"
+                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{height.to_i}:#{width.to_i}"
                 else
                   @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
                 end
