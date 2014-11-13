@@ -109,10 +109,12 @@ module Paperclip
 
               width  = target_width.to_i
               height = target_height.to_i
+
+              Ffmpeg.log("width: #{width}, height: #{height}")
               
               if width > height
                 xwidth = [(height.to_f * @meta[:aspect].to_f).to_i, width].max
-                if  @meta[:aspect] < 1.0
+                if  @meta[:aspect] && @meta[:aspect] < 1.0
                   @convert_options[:output][:vf][/\A/] = "scale=#{xwidth}:-1,crop=#{height.to_i}:#{width.to_i}"
                 else
                   @convert_options[:output][:vf][/\A/] = "scale=-1:#{xwidth},crop=#{width.to_i}:#{height.to_i}"
@@ -120,7 +122,7 @@ module Paperclip
               else
                 xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
                 
-                if  @meta[:rotate] < 1.0
+                if  @meta[:aspect] && @meta[:aspect] < 1.0
                   @convert_options[:output][:vf][/\A/] = "scale=#{xheight}:-1,crop=#{height.to_i}:#{width.to_i}"
                 else
                   @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
