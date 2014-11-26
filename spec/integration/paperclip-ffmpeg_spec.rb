@@ -14,7 +14,6 @@ describe 'Video' do
 end
 
 describe 'Thumbnail file' do
-
 	it 'should exist' do
 		@video = Video.create(clip_thumb_normal: File.new(Dir.pwd + '/spec/support/1.mp4'))
 		puts @video.clip_thumb_normal(:thumb)
@@ -38,5 +37,4 @@ describe 'Thumbnail file' do
     size.w.to_f.should be 100.0
     size.h.to_f.should be 100.0
 	end
-
 end

@@ -21,7 +21,7 @@ module Paperclip
           @convert_options[:output].reverse_merge! options[:convert_options][:output]
         end
       end
-      
+
       @geometry        = options[:geometry]
       @file            = file
       @keep_aspect     = !@geometry.nil? && @geometry[-1,1] != '!'
@@ -47,7 +47,7 @@ module Paperclip
       dst = Tempfile.new([@basename, @format ? ".#{@format}" : ''])
       Ffmpeg.log("Destination File Built") if @whiny
       dst.binmode
-      
+
       parameters = []
 
       Ffmpeg.log("Adding Geometry") if @whiny
@@ -63,17 +63,20 @@ module Paperclip
         unless @meta[:size].nil?
           Ffmpeg.log("Target Size is Available") if @whiny
           current_width, current_height = @meta[:size].split('x')
-
-
-        # if auto_portrait_landspace
-        if @auto_portrait_landspace && ( \
-            ((current_width < current_height) && (target_width > target_height)) || \
-            ((current_width > current_height) && (target_width < target_height)) || \
-            @meta[:rotate] == 90 )
-          target_width, target_height = target_height, target_width     
-        end
-
-          # Current width and height
+          if @auto_rotate && !@meta[:rotate].nil?
+            case @meta[:rotate]
+            when 90, 270
+              current_width, current_height = current_height, current_width
+              @meta[:aspect] = 1.to_f/@meta[:aspect]
+            end
+          end
+          #  if @auto_portrait_landspace && ( #\
+          #      ((current_width < current_height) && (target_width > target_height)) || \
+          #      ((current_width > current_height) && (target_width < target_height)) || \
+          #      @meta[:rotate] == 90 )
+          #    current_width, current_height = current_height, current_width
+          #  end
+          # # Current width and height
           if @keep_aspect
             Ffmpeg.log("Keeping Aspect Ratio") if @whiny
             if @enlarge_only
@@ -90,7 +93,10 @@ module Paperclip
               end
             elsif @shrink_only
               Ffmpeg.log("Shrink Only") if @whiny
+              puts current_width; puts current_height
               if current_width.to_i > target_width.to_i
+                puts "cw: #{current_width}, tw: #{target_width}"
+                puts "ch: #{current_height}, th: #{target_height}"
                 # Keep aspect ratio
                 width = target_width.to_i
                 height = (width.to_f / (@meta[:aspect].to_f)).to_i
@@ -110,24 +116,55 @@ module Paperclip
               width  = target_width.to_i
               height = target_height.to_i
 
-              Ffmpeg.log("width: #{width}, height: #{height}")
-              
-              if width > height
-                xwidth = [(height.to_f * @meta[:aspect].to_f).to_i, width].max
-                if  @meta[:aspect] && @meta[:aspect] < 1.0
-                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xwidth},crop=#{height.to_i}:#{width.to_i}"
+              target_width = target_width.to_i.to_f
+              target_height = target_height.to_i.to_f
+              current_width = current_width.to_i.to_f
+              current_height = current_height.to_i.to_f
+
+              # Get aspect ratio to target aspect ratio, but don't enlarge the image
+              if (current_width < target_width) && (current_height < target_height)
+                if current_width < current_height
+                  width = current_width
+                  height = width * (target_height / target_width)
                 else
-                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xwidth},crop=#{width.to_i}:#{height.to_i}"
+                  height = current_height
+                  width = height * (target_width / target_height)
                 end
-              else
-                xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
-                
-                if  @meta[:aspect] && @meta[:aspect] < 1.0
-                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{height.to_i}:#{width.to_i}"
-                else
-                  @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
-                end
+              elsif current_width < target_width
+                width = current_width
+                height = width * (target_height / target_width)
+              elsif current_height < target_height
+                height = current_height
+                width = height * (target_width / target_height)
               end
+
+              current_width = current_width.to_i.to_s
+              current_height = current_height.to_i.to_s
+              target_width = target_width.to_i.to_s
+              target_height = target_height.to_i.to_s
+              width = width.to_i.to_s
+              height = height.to_i.to_s
+
+              Ffmpeg.log("width: #{width}, height: #{height}")
+
+              @convert_options[:output][:vf][/\A/] = "crop=#{width.to_i}:#{height.to_i}"
+
+              # if width > height
+              #   xwidth = [(height.to_f * @meta[:aspect].to_f).to_i, width].max
+              #   if @meta[:aspect] && @meta[:aspect] < 1.0
+              #     @convert_options[:output][:vf][/\A/] = "crop=#{height.to_i}:#{width.to_i}"
+              #   else
+              #     @convert_options[:output][:vf][/\A/] = "crop=#{width.to_i}:#{height.to_i}"
+              #   end
+              # else
+              #   xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
+
+              #   if  @meta[:aspect] && @meta[:aspect] < 1.0
+              #     @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{height.to_i}:#{width.to_i}"
+              #   else
+              #     @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
+              #   end
+              # end
               # # Keep aspect ratio
               # width = target_width.to_i
               # height = (width.to_f / (@meta[:aspect].to_f)).to_i
@@ -163,14 +200,16 @@ module Paperclip
         comma = @convert_options[:output][:vf].blank? ? '' : ','
 
         Ffmpeg.log("Adding rotation #{@meta[:rotate]}") if @whiny
+        vf = @convert_options[:output][:vf]
         case @meta[:rotate]
         when 90
-          @convert_options[:output][:vf] += comma + 'transpose=1'
+          @convert_options[:output][:vf] = 'transpose=1' + comma + vf
         when 180
-          @convert_options[:output][:vf] += comma + 'vflip,hflip'
+          @convert_options[:output][:vf] += 'vflip,hflip' + comma + vf
         when 270
-          @convert_options[:output][:vf] += comma + 'transpose=2'
+          @convert_options[:output][:vf] += 'transpose=2' + comma + vf
         end
+        @convert_options[:output]['metadata:s:v:0'] = 'rotate=0'
       end
 
       Ffmpeg.log("Adding Format") if @whiny
@@ -214,7 +253,7 @@ module Paperclip
 
       dst
     end
-    
+
     def identify
       meta = {}
       av_lib_version = Ffmpeg.detect_ffprobe_or_avprobe
@@ -237,8 +276,8 @@ module Paperclip
         if line =~ /Duration:(\s.?(\d*):(\d*):(\d*\.\d*))/
           meta[:length] = $2.to_s + ":" + $3.to_s + ":" + $4.to_s
         end
-        if line =~ /rotate\s*:\s(\d*)/ 
-          meta[:rotate] = $1.to_i 
+        if line =~ /rotate\s*:\s(\d*)/
+          meta[:rotate] = $1.to_i
         end
       end
       Paperclip.log("[ffmpeg] Command Success") if @whiny
@@ -295,7 +334,7 @@ module Paperclip
       end
     end
   end
-  
+
   class Attachment
     def meta
       instance_read(:meta)

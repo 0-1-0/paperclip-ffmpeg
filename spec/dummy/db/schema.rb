@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131210144101) do
+ActiveRecord::Schema.define(version: 20141126155601) do
 
   create_table "videos", force: true do |t|
     t.datetime "created_at"
@@ -40,6 +40,10 @@ ActiveRecord::Schema.define(version: 20131210144101) do
     t.string   "clip_thumb_bad_extension_content_type"
     t.integer  "clip_thumb_bad_extension_file_size"
     t.datetime "clip_thumb_bad_extension_updated_at"
+    t.string   "mobile_file_name"
+    t.string   "mobile_content_type"
+    t.integer  "mobile_file_size"
+    t.datetime "mobile_updated_at"
   end
 
 end
