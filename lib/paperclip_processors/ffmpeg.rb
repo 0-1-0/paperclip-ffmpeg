@@ -70,13 +70,6 @@ module Paperclip
               @meta[:aspect] = 1.to_f/@meta[:aspect]
             end
           end
-          #  if @auto_portrait_landspace && ( #\
-          #      ((current_width < current_height) && (target_width > target_height)) || \
-          #      ((current_width > current_height) && (target_width < target_height)) || \
-          #      @meta[:rotate] == 90 )
-          #    current_width, current_height = current_height, current_width
-          #  end
-          # # Current width and height
           if @keep_aspect
             Ffmpeg.log("Keeping Aspect Ratio") if @whiny
             if @enlarge_only
@@ -110,7 +103,8 @@ module Paperclip
               Ffmpeg.log("Pad Only") if @whiny
 
               # There could be options already set
-              @convert_options[:output][:vf][/\A/] = ',' if @convert_options[:output][:vf]
+              vf = @convert_options[:output][:vf]
+              @convert_options[:output][:vf] = vf + ',' unless vf.blank?
               @convert_options[:output][:vf] ||= ''
 
               width  = target_width.to_i
@@ -143,35 +137,8 @@ module Paperclip
 
               Ffmpeg.log("width: #{width}, height: #{height}")
 
-              @convert_options[:output][:vf][/\A/] = "crop=#{width.to_i}:#{height.to_i}"
+              @convert_options[:output][:vf] += "crop=#{width.to_i}:#{height.to_i}"
 
-              # if width > height
-              #   xwidth = [(height.to_f * @meta[:aspect].to_f).to_i, width].max
-              #   if @meta[:aspect] && @meta[:aspect] < 1.0
-              #     @convert_options[:output][:vf][/\A/] = "crop=#{height.to_i}:#{width.to_i}"
-              #   else
-              #     @convert_options[:output][:vf][/\A/] = "crop=#{width.to_i}:#{height.to_i}"
-              #   end
-              # else
-              #   xheight = [(width.to_f / @meta[:aspect].to_f).to_i, height].max
-
-              #   if  @meta[:aspect] && @meta[:aspect] < 1.0
-              #     @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{height.to_i}:#{width.to_i}"
-              #   else
-              #     @convert_options[:output][:vf][/\A/] = "scale=-1:#{xheight},crop=#{width.to_i}:#{height.to_i}"
-              #   end
-              # end
-              # # Keep aspect ratio
-              # width = target_width.to_i
-              # height = (width.to_f / (@meta[:aspect].to_f)).to_i
-              # # We should add half the delta as a padding offset Y
-              # pad_y = (target_height.to_f - height.to_f) / 2
-
-              # if pad_y > 0
-              #   @convert_options[:output][:vf][/\A/] = "scale=#{width}:-1,pad=#{width.to_i}:#{target_height.to_i}:0:#{pad_y}:#@pad_color"
-              # else
-              #   @convert_options[:output][:vf][/\A/] = "scale=#{width}:-1,crop=#{width.to_i}:#{height.to_i}"
-              # end
               Ffmpeg.log("Convert Options: #{@convert_options[:output][:s]}") if @whiny
             else
               Ffmpeg.log("Resize") if @whiny
@@ -201,9 +168,9 @@ module Paperclip
         when 90
           @convert_options[:output][:vf] = 'transpose=1' + comma + vf
         when 180
-          @convert_options[:output][:vf] += 'vflip,hflip' + comma + vf
+          @convert_options[:output][:vf] = 'vflip,hflip' + comma + vf
         when 270
-          @convert_options[:output][:vf] += 'transpose=2' + comma + vf
+          @convert_options[:output][:vf] = 'transpose=2' + comma + vf
         end
         @convert_options[:output]['metadata:s:v:0'] = 'rotate=0'
       end
