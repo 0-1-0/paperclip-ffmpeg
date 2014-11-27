@@ -93,13 +93,13 @@ module Paperclip
               end
             elsif @shrink_only
               Ffmpeg.log("Shrink Only") if @whiny
-              puts current_width; puts current_height
-              if current_width.to_i > target_width.to_i
-                puts "cw: #{current_width}, tw: #{target_width}"
-                puts "ch: #{current_height}, th: #{target_height}"
+              if (current_width.to_i > target_width.to_i) || (current_height.to_i > target_height.to_i)
                 # Keep aspect ratio
-                width = target_width.to_i
-                height = (width.to_f / (@meta[:aspect].to_f)).to_i
+                scale_w = current_width.to_i.to_f / target_width.to_i
+                scale_h = current_height.to_i.to_f / target_height.to_i
+                scale = [scale_w, scale_h].max
+                width = current_width.to_i.to_f / scale
+                height = current_height.to_i.to_f / scale
                 @convert_options[:output][:s] = "#{width.to_i/2*2}x#{height.to_i/2*2}"
                 Ffmpeg.log("Convert Options: #{@convert_options[:output][:s]}") if @whiny
               else
@@ -122,20 +122,16 @@ module Paperclip
               current_height = current_height.to_i.to_f
 
               # Get aspect ratio to target aspect ratio, but don't enlarge the image
-              if (current_width < target_width) && (current_height < target_height)
-                if current_width < current_height
+              if (current_width <= target_width) || (current_height <= target_height)
+                scale_w = current_width / target_width
+                scale_h = current_height / target_height
+                if scale_w <= scale_h
                   width = current_width
-                  height = width * (target_height / target_width)
+                  height = width * target_height / target_width
                 else
                   height = current_height
-                  width = height * (target_width / target_height)
+                  width = current_height * target_width / target_height
                 end
-              elsif current_width < target_width
-                width = current_width
-                height = width * (target_height / target_width)
-              elsif current_height < target_height
-                height = current_height
-                width = height * (target_width / target_height)
               end
 
               current_width = current_width.to_i.to_s
