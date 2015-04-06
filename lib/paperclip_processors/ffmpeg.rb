@@ -116,7 +116,7 @@ module Paperclip
               current_height = current_height.to_i.to_f
 
               # Get aspect ratio to target aspect ratio, but don't enlarge the image
-              if (current_width <= target_width) || (current_height <= target_height)
+              #if (current_width > target_width) || (current_height > target_height)
                 scale_w = current_width / target_width
                 scale_h = current_height / target_height
                 if scale_w <= scale_h
@@ -126,7 +126,7 @@ module Paperclip
                   height = current_height
                   width = current_height * target_width / target_height
                 end
-              end
+              #end
 
               current_width = current_width.to_i.to_s
               current_height = current_height.to_i.to_s
@@ -137,7 +137,7 @@ module Paperclip
 
               Ffmpeg.log("width: #{width}, height: #{height}")
 
-              @convert_options[:output][:vf] += "crop=#{width.to_i}:#{height.to_i}"
+              @convert_options[:output][:vf] += "crop=#{width.to_i}:#{height.to_i},scale=#{target_width.to_i}:#{target_height.to_i}"
 
               Ffmpeg.log("Convert Options: #{@convert_options[:output][:s]}") if @whiny
             else

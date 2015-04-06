@@ -94,45 +94,45 @@ describe 'Mobile' do
     h.should == 1080
   end
 
-  it 'does not enlarge image with AxB# parameter' do
-    @video = Video.create(mobile: File.new(Dir.pwd + '/spec/support/rotate.mp4'))
-    file = File.open(Dir.pwd + '/spec/dummy/public' + @video.mobile(:xpad).split('?')[0])
+  # it 'does not enlarge image with AxB# parameter' do
+  #   @video = Video.create(mobile: File.new(Dir.pwd + '/spec/support/rotate.mp4'))
+  #   file = File.open(Dir.pwd + '/spec/dummy/public' + @video.mobile(:xpad).split('?')[0])
 
-    size = ImageSize.new(file.read)
+  #   size = ImageSize.new(file.read)
 
-    w = size.w
-    h = size.h
+  #   w = size.w
+  #   h = size.h
 
-    # 1:2
-    w.should == 540
-    h.should == 1080
-  end
+  #   # 1:2
+  #   w.should == 540
+  #   h.should == 1080
+  # end
 
-  it 'does not enlarge image with AxB# parameter (vertical)' do
-    @video = Video.create(mobile: File.new(Dir.pwd + '/spec/support/vertical.mp4'))
-    file = File.open(Dir.pwd + '/spec/dummy/public' + @video.mobile(:xpad).split('?')[0])
+  # it 'does not enlarge image with AxB# parameter (vertical)' do
+  #   @video = Video.create(mobile: File.new(Dir.pwd + '/spec/support/vertical.mp4'))
+  #   file = File.open(Dir.pwd + '/spec/dummy/public' + @video.mobile(:xpad).split('?')[0])
 
-    size = ImageSize.new(file.read)
+  #   size = ImageSize.new(file.read)
 
-    w = size.w
-    h = size.h
+  #   w = size.w
+  #   h = size.h
 
-    # 1:2
-    w.should == 960
-    h.should == 1920
-  end
+  #   # 1:2
+  #   w.should == 960
+  #   h.should == 1920
+  # end
 
-  it 'does not enlarge image with AxB# parameter (landscape with strange rotation)' do
-    @video = Video.create(mobile: File.new(Dir.pwd + '/spec/support/landscape.mp4'))
-    file = File.open(Dir.pwd + '/spec/dummy/public' + @video.mobile(:xpad).split('?')[0])
+  # it 'does not enlarge image with AxB# parameter (landscape with strange rotation)' do
+  #   @video = Video.create(mobile: File.new(Dir.pwd + '/spec/support/landscape.mp4'))
+  #   file = File.open(Dir.pwd + '/spec/dummy/public' + @video.mobile(:xpad).split('?')[0])
 
-    size = ImageSize.new(file.read)
+  #   size = ImageSize.new(file.read)
 
-    w = size.w
-    h = size.h
+  #   w = size.w
+  #   h = size.h
 
-    # 1:2
-    w.should == 540
-    h.should == 1080
-  end
+  #   # 1:2
+  #   w.should == 540
+  #   h.should == 1080
+  # end
 end

@@ -16,7 +16,6 @@ end
 describe 'Thumbnail file' do
 	it 'should exist' do
 		@video = Video.create(clip_thumb_normal: File.new(Dir.pwd + '/spec/support/1.mp4'))
-		puts @video.clip_thumb_normal(:thumb)
 		File.exist?(Dir.pwd + '/spec/dummy/public' + @video.clip_thumb_normal(:large).split('?')[0]).should be_true
 	end
 
@@ -34,7 +33,7 @@ describe 'Thumbnail file' do
 		@video = Video.create(clip_thumb_normal: File.new(Dir.pwd + '/spec/support/1.mp4'))
 		fh = File.open(Dir.pwd + '/spec/dummy/public' + @video.clip_thumb_normal(:thumb).split('?')[0])
     size = ImageSize.new(fh.read)
-    size.w.to_f.should be 100.0
-    size.h.to_f.should be 100.0
+    size.w.to_f.should eq 100.0
+    size.h.to_f.should eq 100.0
 	end
 end
